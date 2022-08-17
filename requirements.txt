@@ -3,7 +3,7 @@
 # Minimum requirements for a plotly dash application
 numpy
 gradio
-cv2
+opencv-python
 
 # Required for deployment on Heroku
 gunicorn==20.1.0
