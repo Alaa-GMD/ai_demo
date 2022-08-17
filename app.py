@@ -13,12 +13,5 @@ def sepia(input_img):
     return sepia_img
 
 # start gradio demo
-with gr.Blocks() as demo:
-    gr.Markdown("Detect objects in a given image using Yolo")
-    with gr.Row():
-        image_input = gr.Image()
-        image_output = gr.Image()
-    image_button = gr.Button("Detect objects")
-    image_button.click(sepia, inputs=image_input, outputs=image_output)
-
+demo = gr.Interface(sepia, gr.Image(shape=(200, 200)), "image")
 demo.launch()
