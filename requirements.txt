@@ -1,9 +1,5 @@
-# Date: 01-22-2022
-
-# Minimum requirements for a plotly dash application
-numpy
+setuptools==41.0.0
 gradio
-opencv-python
-
-# Required for deployment on Heroku
-gunicorn==20.1.0
+tensorflow==2.0.0
+numpy
+requests
