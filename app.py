@@ -1,63 +1,92 @@
-import dash
-from dash import html
-from dash import dcc
-import plotly.graph_objs as go
+import numpy as np
+import gradio as gr
+import cv2
+import requests 
 
-########### Define your variables
-beers=['Chesapeake Stout', 'Snake Dog IPA', 'Imperial Porter', 'Double Dog IPA']
-ibu_values=[35, 60, 85, 75]
-abv_values=[5.4, 7.1, 9.2, 4.3]
-color1='darkred'
-color2='orange'
-mytitle='Beer Comparison'
-tabtitle='beer!'
-myheading='Flying Dog Beers'
-label1='IBU'
-label2='ABV'
-githublink='https://github.com/austinlasseter/flying-dog-beers'
-sourceurl='https://www.flyingdog.com/beers/'
-
-########### Set up the chart
-bitterness = go.Bar(
-    x=beers,
-    y=ibu_values,
-    name=label1,
-    marker={'color':color1}
-)
-alcohol = go.Bar(
-    x=beers,
-    y=abv_values,
-    name=label2,
-    marker={'color':color2}
-)
-
-beer_data = [bitterness, alcohol]
-beer_layout = go.Layout(
-    barmode='group',
-    title = mytitle
-)
-
-beer_fig = go.Figure(data=beer_data, layout=beer_layout)
+def get_output_layers(net):
+    layer_names = net.getLayerNames()
+    output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+    return output_layers
 
 
-########### Initiate the app
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-server = app.server
-app.title=tabtitle
+def draw_prediction(img, class_id, confidence, x, y, x_plus_w, y_plus_h, classes, COLORS):
+    label = str(classes[class_id])
+    color = COLORS[class_id]
+    cv2.rectangle(img, (x,y), (x_plus_w,y_plus_h), color, 2)
+    cv2.putText(img, label, (x-10,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-########### Set up the layout
-app.layout = html.Div(children=[
-    html.H1(myheading),
-    dcc.Graph(
-        id='flyingdog',
-        figure=beer_fig
-    ),
-    html.A('Code on Github', href=githublink),
-    html.Br(),
-    html.A('Data Source', href=sourceurl),
-    ]
-)
 
-if __name__ == '__main__':
-    app.run_server()
+def detect_objects(image): 
+    Width = image.shape[1]
+    Height = image.shape[0]
+    scale = 0.00392
+    classes = None
+
+    with open(yolo_classes, 'r') as f:
+        classes = [line.strip() for line in f.readlines()]
+    COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
+
+    net = cv2.dnn.readNet(weights, config)
+    blob = cv2.dnn.blobFromImage(image, scale, (416,416), (0,0,0), True, crop=False)
+    net.setInput(blob)
+    outs = net.forward(get_output_layers(net))
+
+    class_ids = []
+    confidences = []
+    boxes = []
+    conf_threshold = 0.5
+    nms_threshold = 0.4
+
+
+    for out in outs:
+        for detection in out:
+            scores = detection[5:]
+            class_id = np.argmax(scores)
+            confidence = scores[class_id]
+            if confidence > 0.5:
+                center_x = int(detection[0] * Width)
+                center_y = int(detection[1] * Height)
+                w = int(detection[2] * Width)
+                h = int(detection[3] * Height)
+                x = center_x - w / 2
+                y = center_y - h / 2
+                class_ids.append(class_id)
+                confidences.append(float(confidence))
+                boxes.append([x, y, w, h])
+
+
+    indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
+
+    for i in indices:
+        #i = i[0]
+        box = boxes[i]
+        x = box[0]
+        y = box[1]
+        w = box[2]
+        h = box[3]
+        draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h), classes, COLORS)
+
+    # cv2.imshow("object detection", image)
+    # cv2.waitKey()
+        
+    cv2.imwrite("object-detection.jpg", image)
+    cv2.destroyAllWindows()
+    return (image)
+
+
+# read yolo params
+weights = 'yolov3.weights'
+image_path= 'dog.jpg'
+config= 'yolov3.cfg'
+yolo_classes = 'yolov3.txt'
+
+# start gradio demo
+with gr.Blocks() as demo:
+    gr.Markdown("Detect objects in a given image using Yolo")
+    with gr.Row():
+        image_input = gr.Image()
+        image_output = gr.Image()
+    image_button = gr.Button("Detect objects")
+    image_button.click(detect_objects, inputs=image_input, outputs=image_output)
+
+demo.launch()
