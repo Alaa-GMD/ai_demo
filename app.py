@@ -1,6 +1,5 @@
 import numpy as np
 import gradio as gr
-import cv2 
 
 def sepia(input_img):
     sepia_filter = np.array([
