@@ -73,6 +73,10 @@ def detect_objects(image):
     cv2.destroyAllWindows()
     return (image)
 
+def test(image):
+    return(image)
+
+
 
 # read yolo params
 weights = 'yolov3.weights'
@@ -87,6 +91,6 @@ with gr.Blocks() as demo:
         image_input = gr.Image()
         image_output = gr.Image()
     image_button = gr.Button("Detect objects")
-    image_button.click(detect_objects, inputs=image_input, outputs=image_output)
+    image_button.click(test, inputs=image_input, outputs=image_output)
 
 demo.launch()
