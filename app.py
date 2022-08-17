@@ -81,7 +81,7 @@ config= 'yolov3-tiny.cfg'
 yolo_classes = 'yolov3.txt'
 
 # start gradio demo
-with gr.Blocks() as demo:
+'''with gr.Blocks() as demo:
     gr.Markdown("Detect objects in a given image using Yolo")
     with gr.Row():
         image_input = gr.Image()
@@ -89,4 +89,8 @@ with gr.Blocks() as demo:
     image_button = gr.Button("Detect objects")
     image_button.click(detect_objects, inputs=image_input, outputs=image_output)
 
+demo.launch()'''
+
+
+demo = gr.Interface(detect_objects, gr.Image(shape=(200, 200)), "image")
 demo.launch()
