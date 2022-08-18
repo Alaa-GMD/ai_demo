@@ -65,12 +65,8 @@ def detect_objects(image):
         w = box[2]
         h = box[3]
         draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h), classes, COLORS)
-
-    # cv2.imshow("object detection", image)
-    # cv2.waitKey()
         
     cv2.imwrite("object-detection.jpg", image)
-    cv2.destroyAllWindows()
     return (image)
 
 
