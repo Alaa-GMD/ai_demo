@@ -1,6 +1,7 @@
 import numpy as np
 import gradio as gr
 import cv2
+import wget
 
 def get_output_layers(net):
     layer_names = net.getLayerNames()
@@ -74,9 +75,10 @@ def detect_objects(image):
 
 
 # read yolo params
-weights = 'yolov3-tiny.weights'
-image_path= 'dog.jpg'
-config= 'yolov3-tiny.cfg'
+# weights = 'yolov3-tiny.weights'
+# config= 'yolov3-tiny.cfg'
+weights = wget.download("https://pjreddie.com/media/files/yolov3.weights")
+config= 'yolov3.cfg'
 yolo_classes = 'yolov3.txt'
 
 # start gradio demo
