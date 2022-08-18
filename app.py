@@ -75,10 +75,8 @@ def detect_objects(image):
 
 
 # read yolo params
-# weights = 'yolov3-tiny.weights'
-# config= 'yolov3-tiny.cfg'
-weights = wget.download("https://pjreddie.com/media/files/yolov3.weights")
-config= 'yolov3.cfg'
+weights = 'yolov3-tiny.weights'
+config= 'yolov3-tiny.cfg'
 yolo_classes = 'yolov3.txt'
 
 # start gradio demo
